@@ -25,6 +25,7 @@ import {
 } from "@tabler/icons-react";
 import { MantineLogo } from "@mantine/ds";
 import { signIn, signOut, useSession } from "next-auth/react";
+import Link from "next/link";
 
 const useStyles = createStyles((theme) => ({
   header: {
@@ -114,13 +115,13 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
   const [opened, { toggle }] = useDisclosure(false);
   const [userMenuOpened, setUserMenuOpened] = useState(false);
 
-
-
   return (
     <div className={classes.header}>
       <Container className={classes.mainSection} size={"2xl"}>
         <Group position="apart">
-          <MantineLogo size={28} />
+          <Link href={"/"}>
+            <MantineLogo size={28} />
+          </Link>
 
           <Burger
             opened={opened}
@@ -162,7 +163,11 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Label>Settings</Menu.Label>
-                <Menu.Item icon={<IconSettings size="0.9rem" stroke={1.5} />}>
+                <Menu.Item
+                  component={Link}
+                  href={"/profile"}
+                  icon={<IconSettings size="0.9rem" stroke={1.5} />}
+                >
                   Account settings
                 </Menu.Item>
                 <Menu.Item
@@ -170,7 +175,6 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
                 >
                   Change Hub
                 </Menu.Item>
-               
 
                 <Menu.Divider />
 
@@ -186,7 +190,6 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
           )}
         </Group>
       </Container>
-     
     </div>
   );
 }
