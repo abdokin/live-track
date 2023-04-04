@@ -161,40 +161,6 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
                 </UnstyledButton>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Item
-                  icon={
-                    <IconHeart
-                      size="0.9rem"
-                      color={theme.colors.red[6]}
-                      stroke={1.5}
-                    />
-                  }
-                >
-                  Liked posts
-                </Menu.Item>
-                <Menu.Item
-                  icon={
-                    <IconStar
-                      size="0.9rem"
-                      color={theme.colors.yellow[6]}
-                      stroke={1.5}
-                    />
-                  }
-                >
-                  Saved posts
-                </Menu.Item>
-                <Menu.Item
-                  icon={
-                    <IconMessage
-                      size="0.9rem"
-                      color={theme.colors.blue[6]}
-                      stroke={1.5}
-                    />
-                  }
-                >
-                  Your comments
-                </Menu.Item>
-
                 <Menu.Label>Settings</Menu.Label>
                 <Menu.Item icon={<IconSettings size="0.9rem" stroke={1.5} />}>
                   Account settings
@@ -202,26 +168,15 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
                 <Menu.Item
                   icon={<IconSwitchHorizontal size="0.9rem" stroke={1.5} />}
                 >
-                  Change account
+                  Change Hub
                 </Menu.Item>
-                <Menu.Item
-                  icon={<IconLogout size="0.9rem" stroke={1.5} />}
-                  onClick={() => void signOut()}
-                >
-                  Logout
-                </Menu.Item>
+               
 
                 <Menu.Divider />
 
                 <Menu.Label>Danger zone</Menu.Label>
                 <Menu.Item
-                  icon={<IconPlayerPause size="0.9rem" stroke={1.5} />}
-                >
-                  Pause subscription
-                </Menu.Item>
-                <Menu.Item
-                  color="red"
-                  icon={<IconTrash size="0.9rem" stroke={1.5} />}
+                  icon={<IconLogout size="0.9rem" stroke={1.5} />}
                   onClick={() => void signOut()}
                 >
                   Logout

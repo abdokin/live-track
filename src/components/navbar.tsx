@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Navbar,
   Tooltip,
-  UnstyledButton,
   createStyles,
   Stack,
   rem,
@@ -18,6 +17,7 @@ import {
   IconLogout,
   IconSwitchHorizontal,
 } from "@tabler/icons-react";
+import Link from "next/link";
 
 const useStyles = createStyles((theme) => ({
   link: {
@@ -56,6 +56,7 @@ interface NavbarLinkProps {
   icon: React.FC<any>;
   label: string;
   active?: boolean;
+  href: string;
   onClick?(): void;
 }
 
@@ -63,24 +64,25 @@ function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
   const { classes, cx } = useStyles();
   return (
     <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
-      <UnstyledButton
+      <Link
+        href={"/"}
         onClick={onClick}
         className={cx(classes.link, { [classes.active]: active })}
       >
         <Icon size="1.2rem" stroke={1.5} />
-      </UnstyledButton>
+      </Link>
     </Tooltip>
   );
 }
 
 const mockdata = [
-  { icon: IconHome2, label: "Home" },
-  { icon: IconGauge, label: "Dashboard" },
-  { icon: IconDeviceDesktopAnalytics, label: "Analytics" },
-  { icon: IconCalendarStats, label: "Releases" },
-  { icon: IconUser, label: "Account" },
-  { icon: IconFingerprint, label: "Security" },
-  { icon: IconSettings, label: "Settings" },
+  { icon: IconHome2, label: "Home",href :"/" },
+  { icon: IconGauge, label: "Dashboard",href :"/dashboard" },
+  { icon: IconDeviceDesktopAnalytics, label: "Analytics",href :"/" },
+  { icon: IconCalendarStats, label: "Releases",href :"/" },
+  { icon: IconUser, label: "Account",href :"/" },
+  { icon: IconFingerprint, label: "Security",href :"/" },
+  { icon: IconSettings, label: "Settings",href :"/" },
 ];
 
 export function NavbarMinimal() {
@@ -103,8 +105,8 @@ export function NavbarMinimal() {
       </Navbar.Section>
       <Navbar.Section>
         <Stack justify="center" spacing={0}>
-          <NavbarLink icon={IconSwitchHorizontal} label="Change account" />
-          <NavbarLink icon={IconLogout} label="Logout" />
+          <NavbarLink icon={IconSwitchHorizontal} label="Change account" href="/"/>
+          <NavbarLink icon={IconLogout} label="Logout" href="/"/>
         </Stack>
       </Navbar.Section>
     </Navbar>
