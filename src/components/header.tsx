@@ -27,6 +27,7 @@ import { MantineLogo } from "@mantine/ds";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { LanguagePicker } from "./language_picker";
+import { ThemeToggle } from "./color_scheme_toggle";
 
 const useStyles = createStyles((theme) => ({
   header: {
@@ -195,6 +196,7 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
+              <ThemeToggle/>
             </Group>
           )}
         </Group>

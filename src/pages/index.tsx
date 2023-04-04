@@ -55,7 +55,7 @@ function ActionsComponent() {
         opened={opened}
         onClose={close}
         position="right"
-        title="Creating package"
+        // title="Creating package"
         overlayProps={{ opacity: 0.5, blur: 4 }}
       >
         {/* Drawer content */}
