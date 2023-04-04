@@ -26,6 +26,7 @@ import {
 import { MantineLogo } from "@mantine/ds";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { LanguagePicker } from "./language_picker";
 
 const useStyles = createStyles((theme) => ({
   header: {
@@ -133,60 +134,68 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
             <Button onClick={() => void signIn()}>Sign In</Button>
           )}
           {sessionData && (
-            <Menu
-              width={260}
-              position="bottom-end"
-              transitionProps={{ transition: "pop-top-right" }}
-              onClose={() => setUserMenuOpened(false)}
-              onOpen={() => setUserMenuOpened(true)}
-              withinPortal
-            >
-              <Menu.Target>
-                <UnstyledButton
-                  className={cx(classes.user, {
-                    [classes.userActive]: userMenuOpened,
-                  })}
-                >
-                  <Group spacing={7}>
-                    <Avatar
-                      src={user.image}
-                      alt={user.name}
-                      radius="xl"
-                      size={20}
-                    />
-                    <Text weight={500} size="sm" sx={{ lineHeight: 1 }} mr={3}>
-                      {user.name}
-                    </Text>
-                    <IconChevronDown size={rem(12)} stroke={1.5} />
-                  </Group>
-                </UnstyledButton>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Label>Settings</Menu.Label>
-                <Menu.Item
-                  component={Link}
-                  href={"/profile"}
-                  icon={<IconSettings size="0.9rem" stroke={1.5} />}
-                >
-                  Account settings
-                </Menu.Item>
-                <Menu.Item
-                  icon={<IconSwitchHorizontal size="0.9rem" stroke={1.5} />}
-                >
-                  Change Hub
-                </Menu.Item>
+            <Group>
+              <LanguagePicker />
+              <Menu
+                width={260}
+                position="bottom-end"
+                transitionProps={{ transition: "pop-top-right" }}
+                onClose={() => setUserMenuOpened(false)}
+                onOpen={() => setUserMenuOpened(true)}
+                withinPortal
+              >
+                <Menu.Target>
+                  <UnstyledButton
+                    className={cx(classes.user, {
+                      [classes.userActive]: userMenuOpened,
+                    })}
+                  >
+                    <Group spacing={7}>
+                      <Avatar
+                        src={user.image}
+                        alt={user.name}
+                        radius="xl"
+                        size={20}
+                      />
+                      <Text
+                        weight={500}
+                        size="sm"
+                        sx={{ lineHeight: 1 }}
+                        mr={3}
+                      >
+                        {user.name}
+                      </Text>
+                      <IconChevronDown size={rem(12)} stroke={1.5} />
+                    </Group>
+                  </UnstyledButton>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>Settings</Menu.Label>
+                  <Menu.Item
+                    component={Link}
+                    href={"/profile"}
+                    icon={<IconSettings size="0.9rem" stroke={1.5} />}
+                  >
+                    Account settings
+                  </Menu.Item>
+                  <Menu.Item
+                    icon={<IconSwitchHorizontal size="0.9rem" stroke={1.5} />}
+                  >
+                    Change Hub
+                  </Menu.Item>
 
-                <Menu.Divider />
+                  <Menu.Divider />
 
-                <Menu.Label>Danger zone</Menu.Label>
-                <Menu.Item
-                  icon={<IconLogout size="0.9rem" stroke={1.5} />}
-                  onClick={() => void signOut()}
-                >
-                  Logout
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+                  <Menu.Label>Danger zone</Menu.Label>
+                  <Menu.Item
+                    icon={<IconLogout size="0.9rem" stroke={1.5} />}
+                    onClick={() => void signOut()}
+                  >
+                    Logout
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            </Group>
           )}
         </Group>
       </Container>

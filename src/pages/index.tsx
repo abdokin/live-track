@@ -1,10 +1,12 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import { useForm } from '@mantine/form';
 
 import { api } from "~/utils/api";
 import { LayoutDefault } from "~/components/layout_default";
-import { Box, Text } from "@mantine/core";
+import { Box, Button, Checkbox, Drawer, Group, Modal, Text, TextInput } from "@mantine/core";
 import { TableSort } from "~/components/table";
+import { useDisclosure } from "@mantine/hooks";
 
 const Home: NextPage = () => {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
@@ -17,8 +19,8 @@ const Home: NextPage = () => {
     data.push({ name, email, company, id: "id" + String(i) });
   }
   const itemsBreadCrumbs = [
-    { title: 'Home', href: '/' },
-    { title: 'packages', href: '/packages' },
+    { title: "Home", href: "/" },
+    { title: "packages", href: "/packages" },
   ];
   return (
     <>
@@ -28,6 +30,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <LayoutDefault items={itemsBreadCrumbs}>
+        <ActionsComponent />
         <Box>
           <Text>
             {hello.data ? hello.data.greeting : "Loading tRPC query..."}
@@ -41,3 +44,76 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+function ActionsComponent() {
+  const [opened, { open, close }] = useDisclosure(false);
+  const create = api.package.create.useMutation();
+
+  return (
+    <>
+      <Drawer
+        opened={opened}
+        onClose={close}
+        position="right"
+        title="Creating package"
+        overlayProps={{ opacity: 0.5, blur: 4 }}
+      >
+        {/* Drawer content */}
+        <CreatePackage/>
+      </Drawer>
+
+      <Group position="right">
+        {create.data}
+        <Button onClick={open} color="cyan">
+          Create Package
+        </Button>
+        <Button
+          onClick={() => {
+            create.mutate({
+              text: "hello",
+            });
+          }}
+          loading={create.isLoading}
+        >
+          Export
+        </Button>
+      </Group>
+    </>
+  );
+}
+
+function CreatePackage() {
+  const form = useForm({
+    initialValues: {
+      email: "",
+      termsOfService: false,
+    },
+
+    validate: {
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
+    },
+  });
+
+  return (
+    <Box maw={300} mx="auto">
+      <form onSubmit={form.onSubmit((values) => console.log(values))}>
+        <TextInput
+          withAsterisk
+          label="Email"
+          placeholder="your@email.com"
+          {...form.getInputProps("email")}
+        />
+
+        <Checkbox
+          mt="md"
+          label="I agree to sell my privacy"
+          {...form.getInputProps("termsOfService", { type: "checkbox" })}
+        />
+
+        <Group position="right" mt="md">
+          <Button type="submit">Submit</Button>
+        </Group>
+      </form>
+    </Box>
+  );
+}

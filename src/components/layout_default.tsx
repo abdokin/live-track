@@ -48,7 +48,7 @@ export function LayoutDefault(props: {
         </Footer>
       }
       header={
-        <Header height={{ base: 50, md: 70 }} zIndex={1000} p="md">
+        <Header height={{ base: 50, md: 70 }} zIndex={200} p="md">
           <HeaderTabs
             user={{
               name: sessionData?.user.name ?? "",
