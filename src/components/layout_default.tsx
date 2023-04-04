@@ -11,6 +11,7 @@ import {
   NavLink,
   Box,
   Container,
+  Stack,
 } from "@mantine/core";
 import Link from "next/link";
 import { IconHome2 } from "@tabler/icons-react";
@@ -19,7 +20,12 @@ import type { ReactNode } from "react";
 import { HeaderTabs } from "./header";
 import { useSession } from "next-auth/react";
 import { NavbarMinimal } from "./navbar";
-export function LayoutDefault(props: { children: ReactNode }) {
+import { BreadCrumbs } from "./breadcrumbs";
+import type { BreadCrumbsItems } from "./breadcrumbs";
+export function LayoutDefault(props: {
+  children: ReactNode;
+  items: BreadCrumbsItems[];
+}) {
   const theme = useMantineTheme();
   const { data: sessionData } = useSession();
   return (
@@ -42,7 +48,7 @@ export function LayoutDefault(props: { children: ReactNode }) {
         </Footer>
       }
       header={
-        <Header height={{ base: 50, md: 70 }} zIndex={1000}   p="md">
+        <Header height={{ base: 50, md: 70 }} zIndex={1000} p="md">
           <HeaderTabs
             user={{
               name: sessionData?.user.name ?? "",
@@ -52,8 +58,9 @@ export function LayoutDefault(props: { children: ReactNode }) {
         </Header>
       }
     >
-      <Container size={'2xl'}>
-      {props.children}
+      <Container size={"2xl"}>
+        <BreadCrumbs items={props.items} />
+        <Stack pt={8}>{props.children}</Stack>
       </Container>
     </AppShell>
   );

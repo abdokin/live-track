@@ -7,12 +7,16 @@ import { useSession } from "next-auth/react";
 
 const Profile: NextPage = () => {
   const { data: sessionData } = useSession();
+  const itemsBreadCrumbs = [
+    { title: 'Home', href: '/' },
+    { title: 'Profile', href: '/profile' },
+  ];
   return (
     <>
       <Head>
         <title>Live Track App - {sessionData?.user.name}</title>
       </Head>
-      <LayoutDefault>
+      <LayoutDefault items={itemsBreadCrumbs}>
         <Box>
           <Text>Welcome {sessionData?.user.name}</Text>
         </Box>

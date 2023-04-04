@@ -111,7 +111,7 @@ interface HeaderTabsProps {
 export function HeaderTabs({ user }: HeaderTabsProps) {
   const { data: sessionData } = useSession();
 
-  const { classes, theme, cx } = useStyles();
+  const { classes, cx } = useStyles();
   const [opened, { toggle }] = useDisclosure(false);
   const [userMenuOpened, setUserMenuOpened] = useState(false);
 
