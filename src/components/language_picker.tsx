@@ -20,7 +20,7 @@ const data = [
 
 const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
   control: {
-    width: rem(200),
+    width: rem(150),
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",

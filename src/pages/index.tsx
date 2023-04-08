@@ -1,23 +1,46 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useForm } from '@mantine/form';
+import { FormErrors, useForm } from "@mantine/form";
 
 import { api } from "~/utils/api";
 import { LayoutDefault } from "~/components/layout_default";
-import { Box, Button, Checkbox, Drawer, Group, Modal, Text, TextInput } from "@mantine/core";
-import { TableSort } from "~/components/table";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Group,
+  Loader,
+  Modal,
+  Notification,
+  NumberInput,
+  Select,
+  Space,
+  Stack,
+  Text,
+  TextInput,
+} from "@mantine/core";
+import { TablePackage } from "~/components/package_table";
 import { useDisclosure } from "@mantine/hooks";
-
+import type {
+  City,
+  Customer,
+  Package,
+  Package_History,
+  Status,
+  User,
+} from "@prisma/client";
+import { toast } from "react-hot-toast";
+export type FullPackage = Package & {
+  status: Status;
+  customer: Customer & {
+    city: City;
+  };
+  creator: User;
+  updator: User;
+  history: Package_History[];
+};
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-  const data = [];
-
-  for (let i = 0; i < 30; i++) {
-    const name = "Person " + String(i + 1);
-    const email = "person" + String(i + 1) + "@example.com";
-    const company = "Company " + String((i % 5) + 1);
-    data.push({ name, email, company, id: "id" + String(i) });
-  }
+  const packages = api.package.all_packages.useQuery();
   const itemsBreadCrumbs = [
     { title: "Home", href: "/" },
     { title: "packages", href: "/packages" },
@@ -30,14 +53,24 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <LayoutDefault items={itemsBreadCrumbs}>
-        <ActionsComponent />
-        <Box>
-          <Text>
-            {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-          </Text>
-
-          <TableSort data={data} />
-        </Box>
+        <ActionsComponent
+          refetch={() => {
+            void packages.refetch();
+          }}
+        />
+        {packages.isLoading ||
+          (packages.isRefetching && (
+            <>
+              <Loader />
+            </>
+          ))}
+        <div
+          style={{
+            overflowX: "scroll",
+          }}
+        >
+          {packages.data && <TablePackage data={packages.data} />}
+        </div>
       </LayoutDefault>
     </>
   );
@@ -45,73 +78,271 @@ const Home: NextPage = () => {
 
 export default Home;
 
-function ActionsComponent() {
+function ActionsComponent(props: { refetch: () => void }) {
   const [opened, { open, close }] = useDisclosure(false);
-  const create = api.package.create.useMutation();
 
   return (
     <>
-      <Drawer
+      <Modal
         opened={opened}
         onClose={close}
-        position="right"
+        // withOverlay={false}
+        size={"2xl"}
         // title="Creating package"
         overlayProps={{ opacity: 0.5, blur: 4 }}
       >
         {/* Drawer content */}
-        <CreatePackage/>
-      </Drawer>
+        <CreatePackage close={close} refetch={props.refetch} />
+      </Modal>
 
       <Group position="right">
-        {create.data}
+        <Button>Export</Button>
+
         <Button onClick={open} color="cyan">
           Create Package
         </Button>
-        <Button
-          onClick={() => {
-            create.mutate({
-              text: "hello",
-            });
-          }}
-          loading={create.isLoading}
-        >
-          Export
-        </Button>
+        <Button>Filters</Button>
       </Group>
     </>
   );
 }
 
-function CreatePackage() {
+function CreatePackage(props: { close: () => void; refetch: () => void }) {
   const form = useForm({
     initialValues: {
-      email: "",
-      termsOfService: false,
+      reference: "",
+      amount: 0,
+      declared_value: 0,
+      check_package: false,
+      description: "",
+      prof_distributed_object: false,
+      fragile: false,
+      weight: 0,
+      shipping_method_id: "",
+      customer_name: "",
+      customer_email: "",
+      customer_city: "",
+      customer_cin: "",
+      customer_phone: "",
+      customer_address: "",
+      customer_city_id: "",
+      city_id: "",
     },
-
+    transformValues: (values) => {
+      return {
+        ...values,
+        fragile: Boolean(values.fragile),
+        prof_distributed_object: Boolean(values.prof_distributed_object),
+      };
+    },
+    // transformValues:,
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
+      weight: (value) => (value < 0 ? "Weight min 0" : null),
+      amount: (value) => (value < 0 ? "Amount min 0" : null),
     },
   });
+  const createPackage = api.package.create.useMutation();
+  const shipping_method = api.package.shipping_method.useQuery();
+  const cities = api.package.cities.useQuery();
 
   return (
-    <Box maw={300} mx="auto">
-      <form onSubmit={form.onSubmit((values) => console.log(values))}>
-        <TextInput
-          withAsterisk
-          label="Email"
-          placeholder="your@email.com"
-          {...form.getInputProps("email")}
-        />
+    <Box w="full">
+      <form
+        onSubmit={form.onSubmit((values) => {
+          createPackage.mutate(values, {
+            onSettled: () => {
+              toast.success(createPackage.data ?? "");
+              props.refetch();
+              props.close();
+            },
+            onError: (error) => {
+              const field_errors = error.data?.zodError?.fieldErrors;
+              if (!field_errors) {
+                return;
+              }
+              form.setErrors(field_errors);
+              if (
+                error &&
+                error.data &&
+                error.data.zodError &&
+                error.data.zodError.fieldErrors
+              ) {
+                const keys = Object.keys(
+                  error.data.zodError.fieldErrors
+                )[0] as string;
+                const firstFieldError = error.data.zodError.fieldErrors[keys];
+                if (firstFieldError) {
+                  toast.error(firstFieldError[0] ?? "");
+                }
+              }
+            },
+          });
+        })}
+      >
+        <Space h="xl" />
+        <Text>Recipient Info:</Text>
+        <Space h="md" />
+        <Stack>
+          <Group grow>
+            <TextInput
+              withAsterisk
+              label="Recipient Name"
+              placeholder="Enter recipient name"
+              {...form.getInputProps("customer_name")}
+            />
+            <TextInput
+              withAsterisk
+              label="Recipient Phone Number"
+              placeholder="Enter recipient phone"
+              {...form.getInputProps("customer_phone")}
+            />
+            <TextInput
+              withAsterisk
+              label="Recipient Address"
+              placeholder="Enter recipient Address"
+              {...form.getInputProps("customer_address")}
+            />
+          </Group>
+          <Group grow>
+            <TextInput
+              withAsterisk
+              label="Recipient City"
+              placeholder="Enter recipient city"
+              {...form.getInputProps("customer_city")}
+            />
+            <TextInput
+              label="Recipient Email"
+              placeholder="Enter recipient email"
+              {...form.getInputProps("customer_email")}
+            />
+            <TextInput
+              label="Recipient CIN"
+              placeholder="Enter recipient CIN"
+              {...form.getInputProps("customer_cin")}
+            />
+          </Group>
+          <Group>
+            {cities.data && (
+              <Select
+                label="Recipient City"
+                placeholder="Pick one"
+                disabled={cities.isLoading}
+                {...form.getInputProps("customer_city_id")}
+                data={
+                  cities.data.map((it) => {
+                    return {
+                      value: it.id,
+                      label: it.name,
+                    };
+                  }) ?? []
+                }
+              />
+            )}
+          </Group>
+        </Stack>
+        <Space h="xl" />
+        <Text>Package Info:</Text>
+        <Space h="md" />
+        <Stack>
+          <Group grow>
+            <TextInput
+              withAsterisk
+              label="Reference"
+              placeholder="your package reference"
+              {...form.getInputProps("reference")}
+            />
+            <NumberInput
+              min={0}
+              withAsterisk
+              label="Amount To be collected"
+              placeholder="0"
+              {...form.getInputProps("amount")}
+            />
+            {shipping_method.data && (
+              <Select
+                label="Shipping Method"
+                placeholder="Pick one"
+                disabled={shipping_method.isLoading}
+                {...form.getInputProps("shipping_method_id")}
+                data={shipping_method.data.map((it) => {
+                  return {
+                    value: it.id,
+                    label: it.name,
+                  };
+                })}
+              />
+            )}
+            <NumberInput
+              min={0}
+              withAsterisk
+              label="Declared Value"
+              placeholder="0"
+              {...form.getInputProps("declared_value")}
+            />
+          </Group>
+          <Group grow py={10}>
+            <Select
+              label="Prof distributed Object"
+              placeholder="Pick one"
+              {...form.getInputProps("prof_distributed_object")}
+              defaultValue={"false"}
+              data={[
+                { value: "false", label: "YES" },
+                { value: "true", label: "NO" },
+              ]}
+            />
+            <Select
+              label="Fragile"
+              placeholder="Pick one"
+              {...form.getInputProps("fragile")}
+              defaultValue={"false"}
+              data={[
+                { value: "false", label: "YES" },
+                { value: "true", label: "NO" },
+              ]}
+            />
+            <NumberInput
+              withAsterisk
+              label="Weight"
+              min={0}
+              placeholder="0"
+              {...form.getInputProps("weight")}
+            />
+            <TextInput
+              label="Product Description"
+              placeholder="product Description"
+              {...form.getInputProps("description")}
+            />
+          </Group>
+          <Group>
+            {cities.data && (
+              <Select
+                label="Package City"
+                placeholder="Pick one"
+                disabled={cities.isLoading}
+                {...form.getInputProps("city_id")}
+                data={
+                  cities.data.map((it) => {
+                    return {
+                      value: it.id,
+                      label: it.name,
+                    };
+                  }) ?? []
+                }
+              />
+            )}
+          </Group>
+        </Stack>
 
         <Checkbox
           mt="md"
-          label="I agree to sell my privacy"
-          {...form.getInputProps("termsOfService", { type: "checkbox" })}
+          label="Can the recipient check the package before paying?"
+          {...form.getInputProps("check_package", { type: "checkbox" })}
         />
-
         <Group position="right" mt="md">
-          <Button type="submit">Submit</Button>
+          <Button type="submit" loading={createPackage.isLoading}>
+            Create
+          </Button>
         </Group>
       </form>
     </Box>

@@ -3,27 +3,37 @@ import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 
 import { api } from "~/utils/api";
+import { Toaster } from "react-hot-toast";
 
 import "~/styles/globals.css";
-import {  ColorSchemeProvider, MantineProvider } from "@mantine/core";
+import { ColorSchemeProvider, MantineProvider } from "@mantine/core";
 import { useState } from "react";
-import type {ColorScheme } from "@mantine/core"
+import type { ColorScheme } from "@mantine/core";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
-  const [colorScheme, setColorScheme] = useState<ColorScheme>('light');
+  const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
   const toggleColorScheme = (value?: ColorScheme) =>
-    setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark'));
-  
+    setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
+
   return (
     <SessionProvider session={session}>
-       <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
-      <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
-      <Component {...pageProps} />
-      </MantineProvider>
-    </ColorSchemeProvider>
+      <ColorSchemeProvider
+        colorScheme={colorScheme}
+        toggleColorScheme={toggleColorScheme}
+      >
+        <MantineProvider
+          theme={{ colorScheme }}
+          withGlobalStyles
+          withNormalizeCSS
+        >
+          <Toaster position='top-right' />
+
+          <Component {...pageProps} />
+        </MantineProvider>
+      </ColorSchemeProvider>
       {/* </ColorSchemeProvider> */}
     </SessionProvider>
   );
