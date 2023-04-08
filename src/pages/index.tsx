@@ -42,6 +42,8 @@ import { CreatePackage } from "~/components/create_package";
 import { PackageShow } from "~/components/package_show";
 import { useStyles } from "~/utils/table_style";
 import { LoadingPage } from "~/components/Loading_page";
+import { saveFileATag } from "~/utils/functions";
+import { toast } from "react-hot-toast";
 export type FullPackage = Package & {
   status: Status;
   customer: Customer & {
@@ -192,11 +194,18 @@ const Home: NextPage = () => {
     selection,
     setSelection,
   };
+  const exportPackage = api.package.export.useMutation();
   const actionProps: ActionProps = {
     selection,
-    isLoading: false,
+    isLoading: exportPackage.isLoading,
     exportCallBack: function (_ids: string[]): void {
-      throw new Error("Function not implemented.");
+      exportPackage.mutate(undefined, {
+        onSuccess: () => {
+          toast.success(exportPackage.data?.message ?? "");
+          const fileName = exportPackage.data?.path as string;
+          saveFileATag(fileName);
+        },
+      });
     },
     globalAction: [
       {

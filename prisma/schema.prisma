@@ -98,8 +98,6 @@ model ShipmentProvider {
     autoTn             Boolean   @default(true)
     image              String
     owner              User      @relation(fields: [ownerId], references: [id])
-    last_hub_packages  Package[] @relation("last_hub")
-    first_hub_packages Package[] @relation("first_hub")
     city               City      @relation(name: "shipment_city", fields: [cityId], references: [id])
     cityId             String    @unique
     ownerId            String
@@ -155,8 +153,6 @@ model Package {
     fragile                 Boolean           @default(false)
     check_package           Boolean           @default(false)
     printed                 Boolean           @default(false)
-    last_hub                ShipmentProvider  @relation(name: "last_hub", fields: [last_hubId], references: [id])
-    first_hub               ShipmentProvider  @relation(name: "first_hub", fields: [first_hubId], references: [id])
     driver                  User              @relation(name: "driver_package", fields: [driverId], references: [id])
     shipper                 User              @relation(name: "shipper_package", fields: [shipperId], references: [id])
     city                    City              @relation(fields: [cityId], references: [id])
@@ -178,6 +174,4 @@ model Package {
     cityId                  String
     driverId                String
     shipperId               String
-    last_hubId              String
-    first_hubId             String
 }

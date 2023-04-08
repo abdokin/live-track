@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { generate_unique_track } from "~/utils/functions";
 import type { Prisma } from "@prisma/client";
+import { exportPackage } from "~/utils/exports/export_model";
 export const packageRouter = createTRPCRouter({
   all_packages: protectedProcedure.query(async ({ ctx }) => {
     const packages = await ctx.prisma.package.findMany({
@@ -58,9 +59,7 @@ export const packageRouter = createTRPCRouter({
           }),
         customer_email: z.string().email().optional(),
         customer_cin: z.string().optional(),
-        reference: z.string().nonempty({
-          message: "reference required",
-        }),
+        reference: z.string(),
         amount: z.number(),
         weight: z.number(),
         shipping_method_id: z.string({
@@ -86,9 +85,7 @@ export const packageRouter = createTRPCRouter({
             });
             return !!city;
           },
-          {
-            message: "Customer City  Not found",
-          }
+          { message: "Customer City  Not found" }
         ),
         city_id: z.string().refine(
           async (value) => {
@@ -99,9 +96,25 @@ export const packageRouter = createTRPCRouter({
             });
             return !!city;
           },
-          {
-            message: "Package City  Not found",
-          }
+          { message: "Package City  Not found" }
+        ),
+        reference: z.string().refine(
+          async (value) => {
+            const data = await ctx.prisma.package.findMany({
+              where: {
+                shipperId: ctx.session.user.id,
+              },
+              select: {
+                reference: true,
+              },
+            });
+            // check if value exist on data  that have reference key
+            const isValueExist = data.some(
+              (it) => it.reference === value
+            );
+            return !isValueExist;
+          },
+          { message: "Reference should be unique for user" }
         ),
         shipping_method_id: z.string().refine(
           async (value) => {
@@ -112,9 +125,7 @@ export const packageRouter = createTRPCRouter({
             });
             return !!shipping_method;
           },
-          {
-            message: "Shipping method Not found",
-          }
+          { message: "Shipping method Not found" }
         ),
       });
       const exist_input = await schema_exists.parseAsync(input);
@@ -128,52 +139,20 @@ export const packageRouter = createTRPCRouter({
           code: "FDF",
         },
       });
-
-      const customer = await ctx.prisma.customer.create({
-        data: {
-          name: input.customer_name,
-          address: input.customer_address,
-          phone: input.customer_address,
-          city: {
-            connect: {
-              id: exist_input.customer_city_id,
-            },
-          },
-          shipperId: ctx.session.user.id,
-        },
-      });
-      // const hub_input: Prisma.ShipmentProviderCreateInput = {
-      //   name: "York-hub",
-      //   image: ctx.session.user.image ?? "",
-      //   owner: {
-      //     connect: {
-      //       id: ctx.session.user.id,
-      //     },
-      //   },
-      //   city: {
-      //     connect: {
-      //       id: input.customer_city_id,
-      //     },
-      //   },
-      // };
-      const last_mile = await ctx.prisma.shipmentProvider.findFirstOrThrow({
-        where: {
-          cityId: exist_input.city_id,
-        },
-      });
-
-      const first_mile = await ctx.prisma.shipmentProvider.findFirstOrThrow({
-        where: {
-          cityId: exist_input.city_id,
-        },
-      });
-
       const package_input: Prisma.PackageCreateInput = {
         tracking_number: "MC-" + generate_unique_track(),
         reference: input.reference,
         customer: {
-          connect: {
-            id: customer.id,
+          create: {
+            name: input.customer_name,
+            address: input.customer_address,
+            phone: input.customer_address,
+            city: {
+              connect: {
+                id: exist_input.customer_city_id,
+              },
+            },
+            shipperId: ctx.session.user.id,
           },
         },
         shipping_method: {
@@ -217,16 +196,6 @@ export const packageRouter = createTRPCRouter({
             id: ctx.session.user.id,
           },
         },
-        last_hub: {
-          connect: {
-            id: last_mile.id,
-          },
-        },
-        first_hub: {
-          connect: {
-            id: first_mile.id,
-          },
-        },
       };
       const package_created = await ctx.prisma.package.create({
         data: package_input,
@@ -242,7 +211,17 @@ export const packageRouter = createTRPCRouter({
         },
       });
       return {
-        message: "package Created",
+        message: "Package Created",
+      };
+    }),
+
+    export: protectedProcedure.mutation(async ({ ctx }) => {
+      const packages = await ctx.prisma.package.findMany();
+      const fileName = `export-packages-${generate_unique_track()}`;
+      exportPackage(fileName, packages);
+      return {
+        message: "exported",
+        path: `/exports/${fileName}`,
       };
     }),
 });
