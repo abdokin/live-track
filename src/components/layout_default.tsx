@@ -1,21 +1,11 @@
 import {
   AppShell,
-  Navbar,
   Header,
-  Aside,
-  MediaQuery,
-  Text,
   useMantineTheme,
   Footer,
-  Burger,
-  NavLink,
-  Box,
   Container,
   Stack,
 } from "@mantine/core";
-import Link from "next/link";
-import { IconHome2 } from "@tabler/icons-react";
-import { useState } from "react";
 import type { ReactNode } from "react";
 import { HeaderTabs } from "./header";
 import { useSession } from "next-auth/react";

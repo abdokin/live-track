@@ -27,7 +27,10 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.cjs",
-    "**/*.mjs"
-, "prisma/seed.js"  ],
-  "exclude": ["node_modules"]
+    "**/*.mjs",
+    "prisma/seed.js",
+    
+  ],
+
+  "exclude": ["node_modules", "/src/utils/table_style.ts"]
 }

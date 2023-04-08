@@ -9,14 +9,8 @@ import {
 } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
 import images from "~/utils/contry_image";
-
-const data = [
-  { label: "English", image: images.english },
-  { label: "German", image: images.german },
-  { label: "Italian", image: images.italian },
-  { label: "French", image: images.french },
-  { label: "Polish", image: images.polish },
-];
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
   control: {
@@ -57,9 +51,17 @@ const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
 }));
 
 export function LanguagePicker() {
+  const data = [
+    { label: "English", image: images.english, locale: "en" },
+    { label: "French", image: images.french, locale: "fr" },
+  ];
+  const router = useRouter();
   const [opened, setOpened] = useState(false);
   const { classes } = useStyles({ opened });
-  const [selected, setSelected] = useState(data[0]);
+  const [selected, setSelected] = useState(
+    router.locale == "en" ? data[0] : data[1]
+  );
+
   const items = data.map((item) => (
     <Menu.Item
       icon={
@@ -73,7 +75,14 @@ export function LanguagePicker() {
       onClick={() => setSelected(item)}
       key={item.label}
     >
-      {item.label}
+      {
+        <UnstyledButton component={Link} locale={item.locale} href={"/"}>
+          {item.label}
+        </UnstyledButton>
+        // <Link locale={item.locale} href={"/"}>
+        //   {item.label}
+        // </Link>
+      }
     </Menu.Item>
   ));
 
@@ -87,7 +96,7 @@ export function LanguagePicker() {
     >
       <Menu.Target>
         <UnstyledButton className={classes.control}>
-          <Group spacing=''>
+          <Group spacing="">
             {selected?.image && (
               <>
                 <Image

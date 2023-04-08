@@ -51,34 +51,60 @@ enum UserRole {
 }
 
 model User {
-    id               String    @id @default(cuid())
-    name             String?
-    email            String?   @unique
-    emailVerified    DateTime?
-    image            String?
-    accounts         Account[]
-    sessions         Session[]
-    phone_number     String?
-    address          String?
-    cin              String?
-    role             UserRole  @default(SHIPPER)
-    created_packages Package[] @relation("creator_package")
-    updated_packages Package[] @relation("updator_package")
+    id                String             @id @default(cuid())
+    name              String?
+    email             String?            @unique
+    emailVerified     DateTime?
+    image             String?
+    accounts          Account[]
+    sessions          Session[]
+    phone_number      String?
+    address           String?
+    cin               String?
+    role              UserRole           @default(SHIPPER)
+    created_packages  Package[]          @relation("creator_package")
+    updated_packages  Package[]          @relation("updator_package")
+    city              City?              @relation(fields: [cityId], references: [id])
+    cityId            String?
+    packages_driven   Package[]          @relation("driver_package")
+    packages_shipped  Package[]          @relation("shipper_package")
+    shipmentProviders ShipmentProvider[]
 }
 
 model City {
-    id       String     @id @default(cuid())
-    name     String
-    createAt DateTime   @default(now())
-    Customer Customer[]
-    Package  Package[]
+    id               String            @id @default(cuid())
+    name             String
+    createAt         DateTime          @default(now())
+    Customer         Customer[]
+    Package          Package[]
+    User             User[]
+    shipmentProvider ShipmentProvider? @relation(name: "shipment_city")
+    createdAt        DateTime          @default(now())
+    updatedAt        DateTime          @default(now())
 }
 
 model Status {
-    id      String    @id @default(cuid())
-    name    String
-    style   String
-    Package Package[]
+    id        String    @id @default(cuid())
+    name      String
+    style     String
+    Package   Package[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now())
+}
+
+model ShipmentProvider {
+    id                 String    @id @default(cuid())
+    name               String
+    autoTn             Boolean   @default(true)
+    image              String
+    owner              User      @relation(fields: [ownerId], references: [id])
+    last_hub_packages  Package[] @relation("last_hub")
+    first_hub_packages Package[] @relation("first_hub")
+    city               City      @relation(name: "shipment_city", fields: [cityId], references: [id])
+    cityId             String    @unique
+    ownerId            String
+    createdAt          DateTime  @default(now())
+    updatedAt          DateTime  @default(now())
 }
 
 model Customer {
@@ -92,13 +118,17 @@ model Customer {
     shipperId String
     cityId    String
     Package   Package[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now())
 }
 
 model Package_History {
-    id          String  @id @default(cuid())
+    id          String   @id @default(cuid())
     packageData Json
     packageId   String
-    package     Package @relation(fields: [packageId], references: [id])
+    package     Package  @relation(fields: [packageId], references: [id])
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @default(now())
 }
 
 model WorkFlow {
@@ -108,6 +138,8 @@ model WorkFlow {
     style                         String
     packages_with_shipping_method Package[] @relation(name: "shipping_method")
     package_with_workflow         Package[] @relation(name: "work_flow")
+    createdAt                     DateTime  @default(now())
+    updatedAt                     DateTime  @default(now())
 }
 
 model Package {
@@ -123,6 +155,10 @@ model Package {
     fragile                 Boolean           @default(false)
     check_package           Boolean           @default(false)
     printed                 Boolean           @default(false)
+    last_hub                ShipmentProvider  @relation(name: "last_hub", fields: [last_hubId], references: [id])
+    first_hub               ShipmentProvider  @relation(name: "first_hub", fields: [first_hubId], references: [id])
+    driver                  User              @relation(name: "driver_package", fields: [driverId], references: [id])
+    shipper                 User              @relation(name: "shipper_package", fields: [shipperId], references: [id])
     city                    City              @relation(fields: [cityId], references: [id])
     customer                Customer          @relation(fields: [customerId], references: [id])
     shipping_method         WorkFlow          @relation(name: "work_flow", fields: [shipping_method_id], references: [id])
@@ -140,4 +176,8 @@ model Package {
     workFlowId              String
     history                 Package_History[]
     cityId                  String
+    driverId                String
+    shipperId               String
+    last_hubId              String
+    first_hubId             String
 }

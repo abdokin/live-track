@@ -29,6 +29,7 @@ async function main() {
       },
     ],
   });
+  
 
   const work_flow = await prisma.workFlow.createMany({
     data: [
@@ -44,6 +45,8 @@ async function main() {
       },
     ],
   });
+
+  
 }
 
 main()

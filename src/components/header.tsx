@@ -131,12 +131,12 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
             className={classes.burger}
             size="sm"
           />
+          <Group>
           {!sessionData && (
             <Button onClick={() => void signIn()}>Sign In</Button>
           )}
-          {sessionData && (
-            <Group>
-              <LanguagePicker />
+            <LanguagePicker />
+            {sessionData && (
               <Menu
                 width={260}
                 position="bottom-end"
@@ -185,6 +185,13 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
                     Change Hub
                   </Menu.Item>
 
+                  <Menu.Item
+                    component={Link}
+                    href={"/config"}
+                    icon={<IconSettings size="0.9rem" stroke={1.5} />}
+                  >
+                    Config
+                  </Menu.Item>
                   <Menu.Divider />
 
                   <Menu.Label>Danger zone</Menu.Label>
@@ -196,9 +203,9 @@ export function HeaderTabs({ user }: HeaderTabsProps) {
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
-              <ThemeToggle/>
-            </Group>
-          )}
+            )}
+            <ThemeToggle />
+          </Group>
         </Group>
       </Container>
     </div>

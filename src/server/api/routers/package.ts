@@ -6,16 +6,28 @@ export const packageRouter = createTRPCRouter({
   all_packages: protectedProcedure.query(async ({ ctx }) => {
     const packages = await ctx.prisma.package.findMany({
       orderBy: {
-        created_at: 'desc',
+        created_at: "desc",
       },
       include: {
+        shipping_method: true,
+        driver: true,
+        shipper: {
+          include: {
+            city: true,
+          },
+        },
+        work_flow: true,
         status: true,
         history: true,
         creator: true,
         updator: true,
         customer: {
           include: {
-            city: true,
+            city: {
+              include: {
+                shipmentProvider: true,
+              },
+            },
           },
         },
       },
@@ -130,6 +142,31 @@ export const packageRouter = createTRPCRouter({
           shipperId: ctx.session.user.id,
         },
       });
+      // const hub_input: Prisma.ShipmentProviderCreateInput = {
+      //   name: "York-hub",
+      //   image: ctx.session.user.image ?? "",
+      //   owner: {
+      //     connect: {
+      //       id: ctx.session.user.id,
+      //     },
+      //   },
+      //   city: {
+      //     connect: {
+      //       id: input.customer_city_id,
+      //     },
+      //   },
+      // };
+      const last_mile = await ctx.prisma.shipmentProvider.findFirstOrThrow({
+        where: {
+          cityId: exist_input.city_id,
+        },
+      });
+
+      const first_mile = await ctx.prisma.shipmentProvider.findFirstOrThrow({
+        where: {
+          cityId: exist_input.city_id,
+        },
+      });
 
       const package_input: Prisma.PackageCreateInput = {
         tracking_number: "MC-" + generate_unique_track(),
@@ -169,6 +206,27 @@ export const packageRouter = createTRPCRouter({
             id: ctx.session.user.id,
           },
         },
+        driver: {
+          // TODO : make it optional
+          connect: {
+            id: ctx.session.user.id,
+          },
+        },
+        shipper: {
+          connect: {
+            id: ctx.session.user.id,
+          },
+        },
+        last_hub: {
+          connect: {
+            id: last_mile.id,
+          },
+        },
+        first_hub: {
+          connect: {
+            id: first_mile.id,
+          },
+        },
       };
       const package_created = await ctx.prisma.package.create({
         data: package_input,
@@ -177,12 +235,14 @@ export const packageRouter = createTRPCRouter({
         },
       });
 
-      const package_hist = await ctx.prisma.package_History.create({
+      await ctx.prisma.package_History.create({
         data: {
           packageData: JSON.stringify(package_created),
           packageId: package_created.id,
         },
       });
-      return "package Created";
+      return {
+        message: "package Created",
+      };
     }),
 });

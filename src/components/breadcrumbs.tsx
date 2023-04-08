@@ -1,4 +1,5 @@
-import { Breadcrumbs, Anchor, Box } from "@mantine/core";
+import { Breadcrumbs, Anchor, Box, UnstyledButton } from "@mantine/core";
+import Link from "next/link";
 
 export type BreadCrumbsItems = {
   title: string;
@@ -11,7 +12,7 @@ interface BreadCrumbsInterface {
 export function BreadCrumbs(props: BreadCrumbsInterface) {
   const items = props.items.map((item, index) => (
     <Anchor href={item.href} key={index}>
-      {item.title}
+      <UnstyledButton component={Link} href={item.href} > {item.title}</UnstyledButton>
     </Anchor>
   ));
   return (
