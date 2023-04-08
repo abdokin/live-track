@@ -10,6 +10,7 @@ import {
   Checkbox,
   Group,
   Loader,
+  LoadingOverlay,
   Modal,
   Notification,
   NumberInput,
@@ -45,6 +46,8 @@ const Home: NextPage = () => {
     { title: "Home", href: "/" },
     { title: "packages", href: "/packages" },
   ];
+  const [visible, { toggle }] = useDisclosure(false);
+
   return (
     <>
       <Head>
@@ -58,17 +61,22 @@ const Home: NextPage = () => {
             void packages.refetch();
           }}
         />
-        {packages.isLoading ||
+        {/* {packages.isLoading ||
           (packages.isRefetching && (
             <>
               <Loader />
             </>
-          ))}
+          ))} */}
         <div
           style={{
             overflowX: "scroll",
+            position:'relative',
+            // width:''
           }}
+          
         >
+          <LoadingOverlay visible={packages.isLoading || packages.isRefetching} overlayBlur={2} />
+
           {packages.data && <TablePackage data={packages.data} />}
         </div>
       </LayoutDefault>

@@ -5,6 +5,9 @@ import type { Prisma } from "@prisma/client";
 export const packageRouter = createTRPCRouter({
   all_packages: protectedProcedure.query(async ({ ctx }) => {
     const packages = await ctx.prisma.package.findMany({
+      orderBy: {
+        created_at: 'desc',
+      },
       include: {
         status: true,
         history: true,
